@@ -1,0 +1,53 @@
+
+podTemplate(agentContainer: 'msh-app-build',
+            agentInjection: true,
+            yaml: '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: msh-hipster
+    image: jhipster/jhipster
+    command:
+    - sleep
+    args:
+    - 99d
+  - name: maven
+    image: maven:3.9.9-eclipse-temurin-17
+    command:
+    - sleep
+    args:
+    - 99d
+'''
+  ) {
+  node(POD_LABEL) {
+    stage('Build a msh jdl project') {
+      container('msh-hipster') {
+        sh 'pwd'
+        sh 'ls -lah'
+        sh 'ls -lah ..'
+        checkout scm
+        sh 'pwd'
+        sh 'ls -lah'
+        sh 'ls -lah ..'
+        sh 'rm .gitignore'
+        sh 'java --version'
+        sh 'npm install -g generator-jhipster'
+        sh 'jhipster jdl MdbainPersonOnboardingFlow.jdl'
+      }
+      
+    }
+    stage('Build a msh maven project') {
+      container('maven') {
+        checkout scm
+        sh '''
+          ls -lah
+          pwd
+          ls -lah ..
+          sh 'rm .gitignore'
+          sh 'maven clean install -DskipTests
+        '''
+      }
+    }
+  }
+}
